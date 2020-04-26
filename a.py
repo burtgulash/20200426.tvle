@@ -7,6 +7,11 @@ def fn(x):
         "*": lambda x, y: x * y,
     }[x]
 
+def csflush(st, cs):
+    if len(cs) > 0:
+        st += [int("".join(cs))]
+        cs.clear()
+
 def flush(st, sy):
     while sy:
         st += [sy.pop()]
@@ -31,14 +36,20 @@ if __name__ == "__main__":
 
     st = []
     sy = []
+    cs = []
 
     y = None
     for c in x:
-        if "0" < c < "9":
-            st += [int(c)]
-        elif c in "+*":
+        if "0" <= c <= "9":
+            cs += [c]
+        elif len(cs) > 0:
+            csflush(st, cs)
+
+        if c in "+*":
             flush(st, sy)
             sy += [c]
+
+    csflush(st, cs)
     flush(st, sy)
 
     print(st)
