@@ -7,15 +7,22 @@ def fn(x):
         "*": lambda x, y: x * y,
     }[x]
 
-def csflush(st, cs):
+def reset(n, s):
+    for _ in range(n[-1]):
+        s.pop()
+    n[-1] = 0
+
+def csflush(sn, st, cs):
     if len(cs) > 0:
         st += [int("".join(cs))]
+        sn[-1] += 1
         cs.clear()
 
-def syflush(st, syn, sy):
+def syflush(sn, st, syn, sy):
     for i in range(syn[-1]):
         assert sy
         st += [sy.pop()]
+        sn[-1] += 1
         syn[-1] -= 1
 
 def ex(xs):
@@ -42,16 +49,15 @@ if __name__ == "__main__":
 
     y = None
     for c in x + "\0":
-        sn[-1] += 1
         #print("st:", st)
 
         if "0" <= c <= "9":
             cs += [c]
         elif len(cs) > 0:
-            csflush(st, cs)
+            csflush(sn, st, cs)
 
         if c in "+*":
-            syflush(st, syn, sy)
+            syflush(sn, st, syn, sy)
             sy += [c]
             syn[-1] += 1
 
@@ -59,9 +65,16 @@ if __name__ == "__main__":
             sn += [0]
             syn += [0]
 
+        if c == ";":
+            reset(syn, sy)
+            reset(sn, st)
+
+        if c == "|":
+            syflush(sn, st, syn, sy)
+
         if c in ")\0":
-            csflush(st, cs)
-            syflush(st, syn, sy)
+            csflush(sn, st, cs)
+            syflush(sn, st, syn, sy)
             syn.pop()
             sn.pop()
 
