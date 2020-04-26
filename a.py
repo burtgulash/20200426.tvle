@@ -12,9 +12,11 @@ def csflush(st, cs):
         st += [int("".join(cs))]
         cs.clear()
 
-def flush(st, sy):
-    while sy:
+def flush(st, syn, sy):
+    for i in range(syn[-1]):
+        assert sy
         st += [sy.pop()]
+        syn[-1] -= 1
 
 def ex(xs):
     ys = []
@@ -34,24 +36,36 @@ if __name__ == "__main__":
     print(x)
 
 
-    st = []
-    sy = []
+    sn, st  = [0], []
+    syn, sy = [0], []
     cs = []
 
     y = None
-    for c in x:
+    for c in x + "\0":
+        sn[-1] += 1
+        #print("st:", st)
+
         if "0" <= c <= "9":
             cs += [c]
         elif len(cs) > 0:
             csflush(st, cs)
 
         if c in "+*":
-            flush(st, sy)
+            flush(st, syn, sy)
             sy += [c]
+            syn[-1] += 1
 
-    csflush(st, cs)
-    flush(st, sy)
+        if c == "(":
+            sn += [0]
+            syn += [0]
 
+        if c in ")\0":
+            csflush(st, cs)
+            flush(st, syn, sy)
+            syn.pop()
+            sn.pop()
+
+    print("---")
     print(st)
 
     y = ex(st)
