@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 import sys
 
+PREC = {
+    "+": (2, 0),
+    "*": (1, 0),
+}
+
 def fn(x):
     return {
         "+": lambda x, y: x + y,
         "*": lambda x, y: x * y,
     }[x]
-
-def reset(n, s):
-    for _ in range(n[-1]):
-        s.pop()
-    n[-1] = 0
 
 def csflush(sn, st, cs):
     if len(cs) > 0:
@@ -18,68 +18,88 @@ def csflush(sn, st, cs):
         sn[-1] += 1
         cs.clear()
 
-def syflush(sn, st, syn, sy):
+def syflush(sn, st, syn, sy, lvl):
     for i in range(syn[-1]):
-        assert sy
-        st += [sy.pop()]
-        sn[-1] += 1
-        syn[-1] -= 1
+        assert sy and syn[-1] > 0
+        if sy[-1][1] > lvl:
+            break
 
-def ex(xs):
-    ys = []
-    for x in xs:
-        if isinstance(x, int):
-            ys += [x]
-        elif isinstance(x, str):
-            R = ys.pop()
-            L = ys.pop()
-            y = fn(x)(L, R)
-            ys += [y]
-    return ys
+        R = st.pop()
+        H = sy.pop()[0]
+        L = st.pop()
+        L = fn(H)(L, R)
+        st += [L]
+
+        syn[-1] -= 1
+        sn[-1] -= 1
+
+#        st += [sy.pop()[0]]
+#        sn[-1] += 1
+#        syn[-1] -= 1
 
 
 if __name__ == "__main__":
     x = " ".join(sys.argv[1:])
-    print(x)
 
-
-    sn, st  = [0], []
+    sn, spushed, st  = [0], [0], []
     syn, sy = [0], []
     cs = []
 
     y = None
     for c in x + "\0":
-        #print("st:", st)
 
+        # LEX
+        if c == " ":
+            continue
         if "0" <= c <= "9":
             cs += [c]
+            continue
         elif len(cs) > 0:
             csflush(sn, st, cs)
 
-        if c in "+*":
-            syflush(sn, st, syn, sy)
-            sy += [c]
-            syn[-1] += 1
+        # PARSE
+        parity = (sn[-1] + spushed[-1] + syn[-1]) % 2
 
-        if c == "(":
-            sn += [0]
-            syn += [0]
+        if c in ";|)\0":
+            if parity == 0:
+                sn[-1] += 1
+                st += [0]
+            syflush(sn, st, syn, sy, 100)
 
         if c == ";":
-            reset(syn, sy)
-            reset(sn, st)
-
-        if c == "|":
-            syflush(sn, st, syn, sy)
-
-        if c in ")\0":
-            csflush(sn, st, cs)
-            syflush(sn, st, syn, sy)
+            for _ in range(sn[-1]):
+                st.pop()
+            sn[-1] = spushed[-1] = 0
+            continue
+        elif c == "|":
+            spushed[-1] += 1
+            continue
+        if c == "(":
+            sn[-1] += 1
+            # TODO increase syn?
+            sn += [0]
+            spushed += [0]
+            syn += [0]
+            continue
+        elif c in ")\0":
+            spushed.pop()
             syn.pop()
             sn.pop()
+            continue
+
+        elif c in "+*":
+            if parity == 1:
+                prec, right = PREC[c]
+                syflush(sn, st, syn, sy, prec)
+                sy += [(c, prec - right)]
+                syn[-1] += 1
+            else:
+                st += [c]
+                st[-1] += 1
+        else:
+            assert False
+
 
     print("---")
+    print(x)
     print(st)
-
-    y = ex(st)
-    print(y)
