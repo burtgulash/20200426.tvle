@@ -74,7 +74,7 @@ if __name__ == "__main__":
         elif c == "|":
             spushed[-1] += 1
             continue
-        if c == "(":
+        elif c == "(":
             sn[-1] += 1
             # TODO increase syn?
             sn += [0]
@@ -85,6 +85,13 @@ if __name__ == "__main__":
             spushed.pop()
             syn.pop()
             sn.pop()
+            continue
+
+        elif c == "_":
+            # TODO only odd parity?
+            v = 0 if sn[-1] == 0 else st[-1]
+            st += [v]
+            sn[-1] += 1
             continue
 
         elif c in "+*":
