@@ -12,7 +12,7 @@ def csflush(st, cs):
         st += [int("".join(cs))]
         cs.clear()
 
-def flush(st, syn, sy):
+def syflush(st, syn, sy):
     for i in range(syn[-1]):
         assert sy
         st += [sy.pop()]
@@ -51,7 +51,7 @@ if __name__ == "__main__":
             csflush(st, cs)
 
         if c in "+*":
-            flush(st, syn, sy)
+            syflush(st, syn, sy)
             sy += [c]
             syn[-1] += 1
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
         if c in ")\0":
             csflush(st, cs)
-            flush(st, syn, sy)
+            syflush(st, syn, sy)
             syn.pop()
             sn.pop()
 
