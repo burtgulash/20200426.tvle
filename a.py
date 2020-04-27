@@ -13,10 +13,9 @@ def fn(x):
     }[x]
 
 def csflush(sn, st, cs):
-    if len(cs) > 0:
-        st += [int("".join(cs))]
-        sn[-1] += 1
-        cs.clear()
+    st += [int("".join(cs))]
+    sn[-1] += 1
+    cs.clear()
 
 def syflush(sn, st, syn, sy, lvl):
     for i in range(syn[-1]):
@@ -49,13 +48,14 @@ if __name__ == "__main__":
     for c in x + "\0":
 
         # LEX
-        if c == " ":
-            continue
         if "0" <= c <= "9":
             cs += [c]
             continue
         elif len(cs) > 0:
             csflush(sn, st, cs)
+
+        if c == " ":
+            continue
 
         # PARSE
         parity = (sn[-1] + spushed[-1] + syn[-1]) % 2
@@ -75,17 +75,20 @@ if __name__ == "__main__":
             spushed[-1] += 1
             continue
         elif c == "(":
-            sn[-1] += 1
+            #sn[-1] += 1
             # TODO increase syn?
             sn += [0]
             spushed += [0]
             syn += [0]
             continue
-        elif c in ")\0":
-            spushed.pop()
+        elif c == ")":
             syn.pop()
-            sn.pop()
+            n = spushed.pop(); spushed[-1] += n
+            n = sn.pop(); sn[-1] += n
             continue
+        elif c == "\0":
+            # TODO cleanup?
+            break
 
         elif c == "_":
             # TODO only odd parity?
